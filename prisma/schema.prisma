@@ -19,10 +19,12 @@ model User {
   email     String   @unique
   name      String?
   password  String
+  role      Role     // Required for all users
   status    String   @default("pending")
   createdAt DateTime @default(now())
 
-  userRoles UserEntityRole[]
+  entityId  String?   // Nullable only for super_admin
+  entity    Entity?   @relation(fields: [entityId], references: [id])
 }
 
 model Entity {
@@ -31,26 +33,15 @@ model Entity {
   slug      String   @unique
   createdAt DateTime @default(now())
 
-  users   UserEntityRole[]
-  invites InviteToken[]
-}
-
-model UserEntityRole {
-  id       String @id @default(cuid())
-  user     User   @relation(fields: [userId], references: [id])
-  userId   String
-  entity   Entity @relation(fields: [entityId], references: [id])
-  entityId String
-  role     Role  
-
-  @@unique([userId, entityId]) // one role per user per entity
+  users     User[]
+  invites   InviteToken[]
 }
 
 model InviteToken {
   id        String   @id @default(cuid())
   email     String
   token     String   @unique
-  role      Role    
+  role      Role
   entity    Entity   @relation(fields: [entityId], references: [id])
   entityId  String
   expiresAt DateTime

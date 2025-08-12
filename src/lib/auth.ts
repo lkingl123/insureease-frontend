@@ -4,10 +4,13 @@ import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
+// ✅ Strongly typed roles
+export type Role = 'super_admin' | 'entity_admin' | 'cred_specialist' | 'provider'
+
 export type UserPayload = {
   userId: string
   email: string
-  role: string
+  role: Role
   entity?: string
 }
 
@@ -16,10 +19,15 @@ export type UserPayload = {
  * Extracts the token from cookies and returns user payload.
  */
 export async function getUserFromToken(): Promise<UserPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if (!token) return null;
-  return await verifyToken(token);
+  const cookieStore = await cookies()
+  const token = cookieStore.get('token')?.value
+
+  if (!token) {
+    console.warn('❌ No token found in cookies')
+    return null
+  }
+
+  return await verifyToken(token)
 }
 
 /**

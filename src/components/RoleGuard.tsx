@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation'
 
 type Role = 'super_admin' | 'entity_admin' | 'cred_specialist' | 'provider'
 
+type MeResponse = {
+  user: {
+    id: string
+    email: string
+    name?: string
+    role: Role
+    entity: {
+      id: string
+      name: string
+      slug: string
+    } | null
+  }
+}
+
 export function RoleGuard({
   required,
   children,
@@ -14,18 +28,21 @@ export function RoleGuard({
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [authorized, setAuthorized] = useState(false)
 
   useEffect(() => {
-    const checkAccess = async () => {
+    const checkRole = async () => {
       try {
         const res = await fetch('/api/me', { credentials: 'include' })
         if (!res.ok) throw new Error('Unauthorized')
 
-        const data = await res.json()
-        const role = data.role as Role | undefined
+        const data = (await res.json()) as MeResponse
+        const role = data.user.role
 
-        if (!role || !required.includes(role)) {
-          return router.replace('/unauthorized')
+        if (required.includes(role)) {
+          setAuthorized(true)
+        } else {
+          router.replace('/unauthorized')
         }
       } catch (err) {
         router.replace('/login')
@@ -34,10 +51,11 @@ export function RoleGuard({
       }
     }
 
-    checkAccess()
+    checkRole()
   }, [router, required])
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <p>🔒 Checking access...</p>
+  if (!authorized) return null
 
   return <>{children}</>
 }

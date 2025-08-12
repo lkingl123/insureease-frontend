@@ -1,11 +1,11 @@
-// src/app/api/login/route.ts
-import { PrismaClient, Role } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { serialize } from 'cookie'
+import type { UserPayload } from '@/lib/auth'
 
-const prisma = new PrismaClient()
+const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(req: Request) {
   const { email, password } = await req.json()
@@ -16,19 +16,11 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: {
-      userRoles: {
-        include: { entity: true },
-      },
-    },
+    include: { entity: true },
   })
 
   if (!user || user.status !== 'active') {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-  }
-
-  if (!user.userRoles.length) {
-    return NextResponse.json({ error: 'User has no roles' }, { status: 403 })
   }
 
   const isValid = await bcrypt.compare(password, user.password)
@@ -36,20 +28,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
-  const { role, entity } = user.userRoles[0]
-
-  const payload = {
+  const payload: UserPayload = {
     userId: user.id,
     email: user.email,
-    role,
-    entity: entity?.slug ?? null,
+    role: user.role,
+    entity: user.role === 'super_admin' ? undefined : user.entity?.slug,
   }
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' })
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
 
   const response = NextResponse.json({
     message: 'Login successful',
-    role,
+    role: payload.role,
     entity: payload.entity,
   })
 
@@ -59,7 +49,7 @@ export async function POST(req: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
     })
   )

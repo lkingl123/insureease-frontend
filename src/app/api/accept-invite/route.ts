@@ -35,15 +35,7 @@ export async function POST(req: Request) {
       name,
       password: hashedPassword,
       status: 'active',
-    },
-  });
-
-    // Assign user to the entity with the role from the invite
-  await prisma.userEntityRole.create({
-    data: {
-      userId: user.id,
-      entityId: invite.entityId,
-      role: invite.role,
+      role: invite.role, // ✅ Assign role directly to the user
     },
   });
 

@@ -1,60 +1,67 @@
-// prisma/seed.ts
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+const { PrismaClient, Role } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('password123', 10)
 
-  const entity = await prisma.entity.upsert({
+  // Create entities
+  const acme = await prisma.entity.upsert({
     where: { slug: 'acme-corp' },
     update: {},
+    create: { name: 'Acme Corp', slug: 'acme-corp' },
+  })
+
+  const dental = await prisma.entity.upsert({
+    where: { slug: 'dental-pro' },
+    update: {},
+    create: { name: 'Dental Pro', slug: 'dental-pro' },
+  })
+
+  // Super admin (no entity)
+  await prisma.user.upsert({
+    where: { email: 'super_admin@example.com' },
+    update: {},
     create: {
-      name: 'Acme Corp',
-      slug: 'acme-corp',
+      email: 'super_admin@example.com',
+      password: hashedPassword,
+      name: 'SUPER ADMIN',
+      status: 'active',
+      role: Role.super_admin,
     },
-  });
+  })
 
-  const roles = ['super_admin', 'entity_admin', 'cred_specialist', 'provider'];
+  // Entity-bound users
+  const entityUsers = [
+    { email: 'admin@acme.com', name: 'ACME ADMIN', role: Role.entity_admin, entityId: acme.id },
+    { email: 'cred@acme.com', name: 'ACME CRED', role: Role.cred_specialist, entityId: acme.id },
+    { email: 'provider@acme.com', name: 'ACME PROVIDER', role: Role.provider, entityId: acme.id },
 
-  for (const role of roles) {
-    const email = `${role}@example.com`;
-    const user = await prisma.user.upsert({
-      where: { email },
+    { email: 'admin@dental.com', name: 'DENTAL ADMIN', role: Role.entity_admin, entityId: dental.id },
+  ]
+
+  for (const user of entityUsers) {
+    await prisma.user.upsert({
+      where: { email: user.email },
       update: {},
       create: {
-        email,
+        email: user.email,
         password: hashedPassword,
-        name: role.replace('_', ' ').toUpperCase(),
+        name: user.name,
         status: 'active',
+        role: user.role,
+        entityId: user.entityId,
       },
-    });
-
-    await prisma.userEntityRole.upsert({
-      where: {
-        userId_entityId: {
-          userId: user.id,
-          entityId: entity.id,
-        },
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        entityId: entity.id,
-        role,
-      },
-    });
+    })
   }
 
-  console.log('✅ Seed complete!');
+  console.log('✅ Seed complete!')
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed error:', e);
-    process.exit(1);
+    console.error('❌ Seed error:', e)
+    process.exit(1)
   })
-  .finally(() => {
-    prisma.$disconnect();
-  });
+  .finally(() => prisma.$disconnect())
