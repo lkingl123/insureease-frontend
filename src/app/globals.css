@@ -1,3 +1,25 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'chota'; 
+
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.gap-4 > * + * { margin-top: 1rem; } /* Stack spacing */
+
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.5em;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

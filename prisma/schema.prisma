@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  super_admin
+  entity_admin
+  cred_specialist
+  provider
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  userRoles UserEntityRole[]
+}
+
+model Entity {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users   UserEntityRole[]
+  invites InviteToken[]
+}
+
+model UserEntityRole {
+  id       String @id @default(cuid())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  entity   Entity @relation(fields: [entityId], references: [id])
+  entityId String
+  role     Role  
+
+  @@unique([userId, entityId]) // one role per user per entity
+}
+
+model InviteToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  role      Role    
+  entity    Entity   @relation(fields: [entityId], references: [id])
+  entityId  String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
