@@ -35,7 +35,8 @@ export async function POST(req: Request) {
       name,
       password: hashedPassword,
       status: 'active',
-      role: invite.role, // ✅ Assign role directly to the user
+      role: invite.role,
+      entityId: invite.entityId, 
     },
   });
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import SubmitButton from '@/components/SubmitButton'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -65,6 +66,7 @@ export default function LoginPage() {
               required
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -76,12 +78,11 @@ export default function LoginPage() {
               required
             />
           </div>
+
           {error && <p className="is-error"><strong>{error}</strong></p>}
-          <div className="form-group" style={{ marginTop: '1.5rem' }}>
-            <button className="primary full-width" type="submit" disabled={loading}>
-              {loading && <span className="spinner" />}
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
+
+          <div className="form-group">
+            <SubmitButton loading={loading} label="Sign In" />
           </div>
         </form>
       </div>
