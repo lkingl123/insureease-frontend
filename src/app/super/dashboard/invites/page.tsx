@@ -34,8 +34,8 @@ export default function InviteListPage() {
       const { invite } = await res.json()
       setInvites(prev => [invite, ...prev])
       setEmail('')
-      setRole('')        
-      setEntityId('')     
+      setRole('')
+      setEntityId('')
     } else {
       const error = await res.json()
       alert(error.error || 'Failed to send invite')
@@ -62,119 +62,131 @@ export default function InviteListPage() {
   }
 
   return (
-    <main className="container py-4">
-      <BackButton />
-      <section className="row">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body">
-              <h1 className="is-large mb-1">Invite Users</h1>
-              <p className="text-muted mb-3">Send role-based invites to entity users.</p>
+    <main className="min-h-screen bg-brand-light/30">
+      <div className="mx-auto max-w-5xl px-4 pt-12 pb-16">
+        <BackButton />
 
-              <form onSubmit={sendInvite} className="row gap">
-                <div className="col-4">
-                  <label className="label">Email</label>
-                  <input
-                    type="email"
-                    className="input w-full"
-                    placeholder="user@example.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
+        <section className="mb-8 bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 p-6">
+          <h1 className="text-2xl font-bold text-brand-gray mb-1">Invite Users</h1>
+          <p className="text-sm text-brand-gray/70 mb-6">
+            Send role-based invites to entity users.
+          </p>
 
-                <div className="col-3">
-                  <label className="label">Role</label>
-                  <select
-                    value={role}
-                    onChange={e => setRole(e.target.value)}
-                    className="input w-full"
-                    required
-                  >
-                    <option value="">Select Role</option>
-                    <option value="entity_admin">Entity Admin</option>
-                    <option value="cred_specialist">Credentialing Specialist</option>
-                    <option value="provider">Provider</option>
-                  </select>
-                </div>
-
-                <div className="col-3">
-                  <label className="label">Entity</label>
-                  <select
-                    value={entityId}
-                    onChange={e => setEntityId(e.target.value)}
-                    className="input w-full"
-                    required
-                  >
-                    <option value="">Select Entity</option>
-                    {entities.map(entity => (
-                      <option key={entity.id} value={entity.id}>{entity.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-2" style={{ marginTop: '2rem' }}>
-                  <button type="submit" className="button is-primary w-full" disabled={submitting}>
-                    {submitting ? 'Sending...' : 'Send'}
-                  </button>
-                </div>
-              </form>
+          <form
+            onSubmit={sendInvite}
+            className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end"
+          >
+            <div>
+              <label className="block text-sm font-medium text-brand-gray mb-1">Email</label>
+              <input
+                type="email"
+                className="w-full rounded-lg border border-brand-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                placeholder="user@example.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="row mt-4">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body">
-              <h2 className="is-medium mb-2">Pending Invites</h2>
-              {loading ? (
-                <p className="text-muted">Loading invites...</p>
-              ) : invites.length === 0 ? (
-                <p className="text-muted">No pending invites found.</p>
-              ) : (
-                <div className="overflow-auto">
-                  <table className="table is-fullwidth is-bordered is-striped">
-                    <thead>
-                      <tr>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Entity</th>
-                        <th>Status</th>
-                        <th>Sent</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {invites.map(invite => (
-                        <tr key={invite.id}>
-                          <td>{invite.email}</td>
-                          <td>{invite.role}</td>
-                          <td>{invite.entity?.name || '-'}</td>
-                          <td>{invite.used ? '✅ Valid' : '⏳ Pending'}</td>
-                          <td>{new Date(invite.createdAt).toLocaleDateString()}</td>
-                          <td>
-                            {!invite.used && (
-                              <button
-                                onClick={() => handleDelete(invite.token)}
-                                className="button is-small is-danger"
-                              >
-                                🗑️ Delete
-                              </button>
-                            )}
-                          </td>
-                        </tr>
+            <div>
+              <label className="block text-sm font-medium text-brand-gray mb-1">Role</label>
+              <select
+                value={role}
+                onChange={e => setRole(e.target.value)}
+                className="w-full rounded-lg border border-brand-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                required
+              >
+                <option value="">Select Role</option>
+                <option value="entity_admin">Entity Admin</option>
+                <option value="cred_specialist">Credentialing Specialist</option>
+                <option value="provider">Provider</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-brand-gray mb-1">Entity</label>
+              <select
+                value={entityId}
+                onChange={e => setEntityId(e.target.value)}
+                className="w-full rounded-lg border border-brand-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                required
+              >
+                <option value="">Select Entity</option>
+                {entities.map(entity => (
+                  <option key={entity.id} value={entity.id}>
+                    {entity.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full inline-flex justify-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
+              >
+                {submitting ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section className="bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-brand-gray mb-4">Pending Invites</h2>
+            {loading ? (
+              <p className="text-brand-gray/70">Loading invites...</p>
+            ) : invites.length === 0 ? (
+              <p className="text-brand-gray/70">No pending invites found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-brand-muted/40">
+                  <thead className="bg-brand-light/50">
+                    <tr>
+                      {['Email', 'Role', 'Entity', 'Status', 'Sent', 'Actions'].map(h => (
+                        <th
+                          key={h}
+                          className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-gray"
+                        >
+                          {h}
+                        </th>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-muted/30 bg-white">
+                    {invites.map(invite => (
+                      <tr key={invite.id} className="hover:bg-brand-light/20">
+                        <td className="px-4 py-3 text-sm text-brand-gray">{invite.email}</td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">{invite.role}</td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">
+                          {invite.entity?.name || '—'}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {invite.used ? '✅ Valid' : '⏳ Pending'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">
+                          {new Date(invite.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          {!invite.used && (
+                            <button
+                              onClick={() => handleDelete(invite.token)}
+                              className="inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 transition-colors"
+                            >
+                              🗑️ Delete
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   )
 }

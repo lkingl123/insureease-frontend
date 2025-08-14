@@ -1,10 +1,28 @@
-@import 'chota'; 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+
+@import "tailwindcss";
+
+/* Define your brand colors (Tailwind v4 uses CSS theme variables) */
+@theme {
+  --color-brand-orange: #F7931E;
+  --color-brand-gray:   #595959;
+  --color-brand-light:  #CCCCCC;
+  --color-brand-muted:  #D9D9D9;
+}
+
+/* Your existing custom CSS can stay */
+.logout-button { position: fixed; top: 1rem; right: 1rem; z-index: 10; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* Your custom utility overrides */
 .mt-4 { margin-top: 1rem; }
 .mt-6 { margin-top: 1.5rem; }
 .mb-4 { margin-bottom: 1rem; }
-.gap-4 > * + * { margin-top: 1rem; } /* Stack spacing */
-
+.gap-4 > * + * { margin-top: 1rem; }
 
 @keyframes spin {
   to {
@@ -18,5 +36,3 @@
   right: 1rem;
   z-index: 10;
 }
-
-

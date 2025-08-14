@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import BackButton from '@/components/BackButton'
-import Spinner from '@/components/Spinner' // adjust path if needed
+import Spinner from '@/components/Spinner'
 
 type Entity = {
   id: string
   name: string
   slug: string
-  createdAt: string // coming from API as ISO string
-  users?: { id: string }[] // may be undefined if API ever forgets include
+  createdAt: string
+  users?: { id: string }[]
 }
 
 export default function ManageEntitiesPage() {
@@ -64,85 +64,107 @@ export default function ManageEntitiesPage() {
   }
 
   return (
-    <main className="container pt-12">
-      <BackButton />
-      <section className="row is-center">
-        <div className="card w-full max-w-4xl">
-          <div className="card-body">
-            <h1 className="is-large mb-4 text-center">Manage Entities</h1>
+    <main className="min-h-screen bg-brand-light/30">
+      <div className="mx-auto max-w-5xl px-4 pt-12 pb-16">
+        <div className="mb-6">
+          <BackButton />
+        </div>
 
-            {/* Create form keeps working via your existing POST /api/entities route */}
+        <section className="bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40">
+          <header className="flex items-center justify-between px-6 py-5 border-b border-brand-muted/50">
+            <h1 className="text-2xl font-bold text-brand-gray">Manage Entities</h1>
+          </header>
+
+          <div className="px-6 py-6">
+            {/* Create form (POST /api/entities) */}
             <form
               action="/api/entities"
               method="POST"
-              className="mb-4 flex items-center justify-center gap-2"
+              className="mb-6 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3"
             >
               <input
                 name="name"
                 placeholder="Entity Name"
-                className="input"
                 required
+                className="w-full rounded-lg border border-brand-muted/80 bg-white px-4 py-2 text-sm text-brand-gray placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-orange"
               />
               <input
                 name="slug"
                 placeholder="Slug"
-                className="input mt-6"
                 required
+                className="w-full rounded-lg border border-brand-muted/80 bg-white px-4 py-2 text-sm text-brand-gray placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-orange"
               />
-              <button type="submit" className="mt-6 button is-primary">
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-lg bg-brand-orange px-5 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-orange"
+              >
                 Add
               </button>
             </form>
 
-
+            {/* Table / loading / empty */}
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Spinner/>
+              <div className="flex items-center justify-center py-10">
+                <Spinner />
               </div>
             ) : entities.length === 0 ? (
-              <p className="text-center">No entities found.</p>
+              <p className="text-center text-brand-gray/80 py-8">No entities found.</p>
             ) : (
-              <table className="table is-fullwidth is-hoverable">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Slug</th>
-                    <th>Users</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entities.map((entity) => (
-                    <tr key={entity.id}>
-                      <td>{entity.name}</td>
-                      <td>{entity.slug}</td>
-                      <td>{entity.users?.length ?? 0}</td>
-                      <td>{format(new Date(entity.createdAt), 'PPP')}</td>
-                      <td className="space-x-2">
-                        <button
-                          className="button is-small is-warning inline-flex items-center gap-1"
-                          onClick={() => handleEdit(entity)}
-                          disabled={editingId === entity.id}
+              <div className="overflow-x-auto rounded-xl ring-1 ring-brand-muted/30">
+                <table className="min-w-full divide-y divide-brand-muted/40">
+                  <thead className="bg-brand-light/50">
+                    <tr>
+                      {['Name', 'Slug', 'Users', 'Created', 'Actions'].map((h) => (
+                        <th
+                          key={h}
+                          scope="col"
+                          className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-brand-gray"
                         >
-                          {editingId === entity.id ? <Spinner/> : 'Edit'}
-                        </button>
-                        <button
-                          className="button is-small is-danger inline-flex items-center gap-1"
-                          onClick={() => handleDelete(entity.id)}
-                          disabled={loadingId === entity.id}
-                        >
-                          {loadingId === entity.id ? <Spinner /> : 'Delete'}
-                        </button>
-                      </td>
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-brand-muted/30 bg-white">
+                    {entities.map((entity) => (
+                      <tr key={entity.id} className="hover:bg-brand-light/20">
+                        <td className="px-4 py-3 text-sm text-brand-gray">{entity.name}</td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">{entity.slug}</td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">
+                          {entity.users?.length ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-brand-gray">
+                          {format(new Date(entity.createdAt), 'PPP')}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleEdit(entity)}
+                              disabled={editingId === entity.id}
+                              className="inline-flex items-center gap-2 rounded-lg bg-brand-gray px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                            >
+                              {editingId === entity.id ? <Spinner /> : null}
+                              {editingId === entity.id ? 'Saving…' : 'Edit'}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(entity.id)}
+                              disabled={loadingId === entity.id}
+                              className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                            >
+                              {loadingId === entity.id ? <Spinner /> : null}
+                              {loadingId === entity.id ? 'Deleting…' : 'Delete'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   )
 }

@@ -51,12 +51,21 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="container">
-      <div className="card" style={{ maxWidth: '500px', margin: 'auto', marginTop: '10vh' }}>
-        <h1 className="is-center">InsureEase Login</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+    <main className="min-h-screen flex items-center justify-center bg-brand-light">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-brand-gray text-center mb-6">
+          InsureEase Login
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-brand-gray mb-1"
+            >
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -64,11 +73,18 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="w-full px-4 py-2 border border-brand-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-brand-gray mb-1"
+            >
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -76,13 +92,24 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="w-full px-4 py-2 border border-brand-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
             />
           </div>
 
-          {error && <p className="is-error"><strong>{error}</strong></p>}
+          {/* Error message */}
+          {error && (
+            <p className="text-sm text-red-600 text-center font-semibold">
+              {error}
+            </p>
+          )}
 
-          <div className="form-group">
-            <SubmitButton loading={loading} label="Sign In" />
+          {/* Submit */}
+          <div>
+            <SubmitButton
+              loading={loading}
+              label="Sign In"
+              className="w-full bg-brand-orange text-white py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            />
           </div>
         </form>
       </div>
