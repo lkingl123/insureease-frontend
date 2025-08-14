@@ -1,15 +1,50 @@
-import { prisma } from '@/lib/prisma'
+'use client'
 
-export default async function AllUsersPage() {
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: { entity: true },
-  })
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import ToggleUser from '@/components/ToggleUser'
+import BackButton from '@/components/BackButton'
+
+type User = {
+  id: string
+  email: string
+  role: string
+  status: 'active' | 'inactive'
+  createdAt: string
+  entity?: { name: string }
+}
+
+export default function AllUsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(setUsers)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const deleteUser = async (id: string) => {
+    if (!confirm('Delete this user?')) return
+
+    await fetch('/api/users', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+
+    router.refresh()
+  }
 
   return (
     <main className="container" style={{ paddingTop: '3rem' }}>
+      <BackButton />
       <h1 className="is-large mb-4">All Users</h1>
-      {users.length === 0 ? (
+      {loading ? (
+        <p>Loading users...</p>
+      ) : users.length === 0 ? (
         <p>No users found.</p>
       ) : (
         <table className="table is-fullwidth">
@@ -20,25 +55,33 @@ export default async function AllUsersPage() {
               <th>Status</th>
               <th>Entity</th>
               <th>Joined</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user: {
-                id: string
-                email: string
-                role: string
-                status: string
-                createdAt: string | Date
-                entity?: { name: string }
-                }) => (
-                <tr key={user.id}>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
-                    <td>{user.status}</td>
-                    <td>{user.entity?.name ?? '—'}</td>
-                    <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                </tr>
-                ))}
+            {users.map(user => (
+              <tr key={user.id}>
+                <td>{user.email}</td>
+                <td>{user.role}</td>
+                <td>
+                  <ToggleUser
+                    userId={user.id}
+                    initialStatus={user.status}
+                    onSuccess={() => router.refresh()}
+                  />
+                </td>
+                <td>{user.entity?.name ?? '—'}</td>
+                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <button
+                    className="button is-small is-danger"
+                    onClick={() => deleteUser(user.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}

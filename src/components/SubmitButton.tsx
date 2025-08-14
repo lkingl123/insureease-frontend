@@ -16,13 +16,13 @@ export default function SubmitButton({ loading, label = 'Submit' }: SubmitButton
       style={{
         marginTop: '1.5rem',
         fontWeight: 'bold',
-        fontSize: '1rem',
+        fontSize: '1.5rem',
         padding: '0.75rem',
         borderRadius: '6px',
       }}
     >
       {loading && <Spinner />}
-      {loading ? `${label}ing...` : label}
+      {loading ? `${label}` : label}
     </button>
   )
 }

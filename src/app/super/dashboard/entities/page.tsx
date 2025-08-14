@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
+import BackButton from '@/components/BackButton'
 
 export default async function ManageEntitiesPage() {
   const entities = await prisma.entity.findMany({
@@ -17,6 +18,7 @@ export default async function ManageEntitiesPage() {
 
   return (
     <main className="container" style={{ paddingTop: '3rem' }}>
+      <BackButton />
       <section className="row is-center">
         <div className="card" style={{ width: '100%', maxWidth: '900px' }}>
           <div className="card-body">

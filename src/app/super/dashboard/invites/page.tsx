@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import type { InviteWithEntity, EntityWithUsers } from '../../../../types/dashboard'
+import BackButton from '@/components/BackButton'
 
 export default function InviteListPage() {
   const [invites, setInvites] = useState<InviteWithEntity[]>([])
@@ -62,6 +63,7 @@ export default function InviteListPage() {
 
   return (
     <main className="container py-4">
+      <BackButton />
       <section className="row">
         <div className="col-12">
           <div className="card">

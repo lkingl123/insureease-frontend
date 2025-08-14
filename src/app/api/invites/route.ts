@@ -1,10 +1,9 @@
+// Replace mailersend imports
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend'
 
 const prisma = new PrismaClient()
-
 export async function GET() {
   try {
     const invites = await prisma.inviteToken.findMany({
@@ -71,22 +70,34 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     const inviteUrl = `${baseUrl}/accept-invite?token=${token}`
 
-    const mailerSend = new MailerSend({
-      apiKey: process.env.MAILERSEND_API_KEY!,
+    // ✅ Send email via Brevo API
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY!,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'InsureEase',
+          email: process.env.EMAIL_FROM!,
+        },
+        to: [{ email }],
+        subject: 'You’ve been invited to InsureEase',
+        htmlContent: `
+          <h2>Welcome to InsureEase</h2>
+          <p>You’ve been invited as a <strong>${role.replace('_', ' ')}</strong> for the entity <strong>${invite.entity?.name || 'Unknown Entity'}</strong>.</p>
+          <p><a href="${inviteUrl}">Click here to accept your invite</a></p>
+          <p>This link expires in 24 hours.</p>
+        `,
+      }),
     })
 
-    const emailParams = new EmailParams()
-      .setFrom(new Sender(process.env.EMAIL_FROM!, 'InsureEase'))
-      .setTo([new Recipient(email, '')])
-      .setSubject('You’ve been invited to InsureEase')
-      .setHtml(`
-        <h2>Welcome to InsureEase</h2>
-        <p>You’ve been invited as a <strong>${role.replace('_', ' ')}</strong> for the entity <strong>${invite.entity?.name || 'Unknown Entity'}</strong>.</p>
-        <p><a href="${inviteUrl}">Click here to accept your invite</a></p>
-        <p>This link expires in 24 hours.</p>
-      `)
-
-    await mailerSend.email.send(emailParams)
+    if (!res.ok) {
+      const err = await res.json()
+      console.error('❌ Brevo error:', err)
+      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+    }
 
     return NextResponse.json({ message: 'Invite sent', invite, inviteUrl })
 
