@@ -64,9 +64,10 @@ export default function InviteListPage() {
   return (
     <main className="min-h-screen bg-brand-light/30">
       <div className="mx-auto max-w-5xl px-4 pt-12 pb-16">
+        
         <BackButton />
 
-        <section className="mb-8 bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 p-6">
+        <section className="mb-8 mt-6 bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 p-6">
           <h1 className="text-2xl font-bold text-brand-gray mb-1">Invite Users</h1>
           <p className="text-sm text-brand-gray/70 mb-6">
             Send role-based invites to entity users.
@@ -140,7 +141,7 @@ export default function InviteListPage() {
             ) : invites.length === 0 ? (
               <p className="text-brand-gray/70">No pending invites found.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto ring-1 rounded-xl ring-brand-muted/30">
                 <table className="min-w-full divide-y divide-brand-muted/40">
                   <thead className="bg-brand-light/50">
                     <tr>
