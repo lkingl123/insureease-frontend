@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
+const JWT_SECRET = process.env.JWT_SECRET!
+
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get('token')?.value
 
@@ -12,7 +14,7 @@ export async function middleware(req: NextRequest) {
   try {
     const { payload } = await jwtVerify(
       token,
-      new TextEncoder().encode(process.env.JWT_SECRET)
+      new TextEncoder().encode(JWT_SECRET)
     ) as {
       payload: {
         userId: string
@@ -25,15 +27,15 @@ export async function middleware(req: NextRequest) {
     const { role, entity } = payload
     const pathname = req.nextUrl.pathname
 
-    // ✅ Super admin can access anything
+    // ✅ Allow super_admin to access everything
     if (role === 'super_admin') {
       return NextResponse.next()
     }
 
-    // ✅ For entity-based users, enforce path starts with /{entity}
+    // ✅ Entity-scoped users can only access paths under their entity slug
     if (!entity || !pathname.startsWith(`/${entity}`)) {
       console.warn(
-        `⛔ Access denied for role=${role}, path=${pathname}, expected prefix=/${entity}`
+        `⛔ Access denied: role=${role}, path=${pathname}, expected prefix=/${entity}`
       )
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
@@ -49,6 +51,6 @@ export const config = {
   matcher: [
     '/super/dashboard/:path*',
     '/:entity/dashboard/:path*',
+    '/api/:path*', // ✅ Protects all API routes too
   ],
 }
-

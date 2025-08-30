@@ -48,3 +48,33 @@ model InviteToken {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+
+model Payer {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  products  Product[]
+  contacts  PayerContact[]
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  payerId   String
+  payer     Payer    @relation(fields: [payerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model PayerContact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  fax       String?
+  payerId   String
+  payer     Payer    @relation(fields: [payerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
