@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { InviteWithEntity, EntityWithUsers } from '../../../../types/dashboard'
 import BackButton from '@/components/BackButton'
+import SubmitButton from '@/components/SubmitButton'
 
 export default function InviteListPage() {
   const [invites, setInvites] = useState<InviteWithEntity[]>([])
@@ -67,6 +68,7 @@ export default function InviteListPage() {
         
         <BackButton />
 
+        {/* Invite Form */}
         <section className="mb-8 mt-6 bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 p-6">
           <h1 className="text-2xl font-bold text-brand-gray mb-1">Invite Users</h1>
           <p className="text-sm text-brand-gray/70 mb-6">
@@ -77,6 +79,7 @@ export default function InviteListPage() {
             onSubmit={sendInvite}
             className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end"
           >
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-brand-gray mb-1">Email</label>
               <input
@@ -89,6 +92,7 @@ export default function InviteListPage() {
               />
             </div>
 
+            {/* Role */}
             <div>
               <label className="block text-sm font-medium text-brand-gray mb-1">Role</label>
               <select
@@ -104,35 +108,35 @@ export default function InviteListPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-brand-gray mb-1">Entity</label>
-              <select
-                value={entityId}
-                onChange={e => setEntityId(e.target.value)}
-                className="w-full rounded-lg border border-brand-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                required
-              >
-                <option value="">Select Entity</option>
-                {entities.map(entity => (
-                  <option key={entity.id} value={entity.id}>
-                    {entity.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Entity + Submit Button in flex row */}
+            <div className="md:col-span-2 flex gap-2 items-end">
+              {/* Entity Dropdown */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-brand-gray mb-1">Entity</label>
+                <select
+                  value={entityId}
+                  onChange={e => setEntityId(e.target.value)}
+                  className="w-full rounded-lg border border-brand-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                  required
+                >
+                  <option value="">Select Entity</option>
+                  {entities.map(entity => (
+                    <option key={entity.id} value={entity.id}>
+                      {entity.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full inline-flex justify-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Sending...' : 'Send'}
-              </button>
+              {/* Submit Button */}
+              <div className="self-end">
+                <SubmitButton loading={submitting} label="Send Invite"  className="py-2 text-sm font-medium min-w-[120px]" />
+              </div>
             </div>
           </form>
         </section>
 
+        {/* Invite Table */}
         <section className="bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 overflow-hidden">
           <div className="p-6">
             <h2 className="text-xl font-bold text-brand-gray mb-4">Pending Invites</h2>

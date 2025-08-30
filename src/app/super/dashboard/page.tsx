@@ -1,116 +1,60 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import type { EntityWithUsers, InviteWithEntity } from '@/types/dashboard'
 
-type Entity = {
-  id: string
-  name: string
-  slug: string
-  users?: { id: string }[]
-}
-
-export default function Page() {
-  const [entities, setEntities] = useState<Entity[]>([])
+export default function SuperDashboardPage() {
+  const [entities, setEntities] = useState<EntityWithUsers[]>([])
+  const [invites, setInvites] = useState<InviteWithEntity[]>([])
   const [loading, setLoading] = useState(true)
-  const [q, setQ] = useState('')
 
   useEffect(() => {
-    fetch('/api/entities', { cache: 'no-store' })
-      .then(r => r.json())
-      .then((data: Entity[]) => setEntities(Array.isArray(data) ? data : []))
+    Promise.all([
+      fetch('/api/entities').then(res => res.json()),
+      fetch('/api/invites').then(res => res.json())
+    ])
+      .then(([entitiesData, invitesData]) => {
+        setEntities(Array.isArray(entitiesData) ? entitiesData : [])
+        setInvites(Array.isArray(invitesData) ? invitesData : [])
+      })
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    if (!term) return entities
-    return entities.filter(e =>
-      [e.name, e.slug].some(v => v?.toLowerCase().includes(term))
-    )
-  }, [entities, q])
+  const totalUsers = entities.reduce((sum, e) => sum + (e.users?.length ?? 0), 0)
+  const pendingInvites = invites.filter((invite) => !invite.used).length
 
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <section>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search entities by name or slug…"
-          className="w-full max-w-md rounded-lg border border-brand-muted/60 bg-white px-3 py-2 text-sm text-brand-gray placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-orange"
-        />
-      </section>
+      <h2 className="text-2xl font-bold text-brand-gray">Welcome, Super Admin</h2>
 
-      {/* Entities list */}
-      <section className="bg-white rounded-2xl shadow-lg ring-1 ring-brand-muted/40 p-4">
-        <h2 className="text-lg font-bold text-brand-gray px-2 pb-2">Entities</h2>
-
-        {loading ? (
-          <div className="py-10 text-center text-brand-gray/80">Loading…</div>
-        ) : filtered.length === 0 ? (
-          <div className="py-10 text-center text-brand-gray/70">No entities found.</div>
-        ) : (
-      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-        {filtered.map((e) => (
-          <li
-            key={e.id}
-            className="rounded-xl ring-1 ring-brand-muted/40 bg-white p-4 hover:bg-brand-light/20 transition flex flex-col justify-between min-h-[100px]"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-base font-semibold text-black">{e.name}</h3>
-                <p className="text-xs text-brand-gray/70">/{e.slug}</p>
-                <p className="mt-1 text-xs text-brand-gray">
-                  Users: {e.users?.length ?? 0}
-                </p>
-              </div>
-              <Link
-                href={`/${e.slug}/dashboard`}
-                className="rounded-full bg-brand-gray text-white text-xs font-semibold py-1.5 px-3 hover:bg-gray-700 transition-colors"
-              >
-                Open Dashboard
-              </Link>
+      {loading ? (
+        <div className="text-brand-gray/70">Loading dashboard data…</div>
+      ) : (
+        <>
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-xl p-4 bg-white shadow ring-1 ring-brand-muted/30">
+              <h3 className="text-sm font-semibold text-brand-gray">Total Entities</h3>
+              <p className="text-3xl font-bold mt-1">{entities.length}</p>
             </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link
-                href={`/providers?entity=${e.slug}`}
-                className="rounded-full bg-white border border-brand-muted/60 text-brand-gray text-xs py-1 px-3 hover:bg-brand-light/40 transition"
-              >
-                Providers
-              </Link>
-              <Link
-                href={`/tasks?entity=${e.slug}`}
-                className="rounded-full bg-white border border-brand-muted/60 text-brand-gray text-xs py-1 px-3 hover:bg-brand-light/40 transition"
-              >
-                Tasks
-              </Link>
-              <Link
-                href={`/alerts?entity=${e.slug}`}
-                className="rounded-full bg-white border border-brand-muted/60 text-brand-gray text-xs py-1 px-3 hover:bg-brand-light/40 transition"
-              >
-                Alerts
-              </Link>
-              <Link
-                href={`/payer-matrix?entity=${e.slug}`}
-                className="rounded-full bg-white border border-brand-muted/60 text-brand-gray text-xs py-1 px-3 hover:bg-brand-light/40 transition"
-              >
-                Payer Matrix
-              </Link>
-              <Link
-                href={`/settings?entity=${e.slug}`}
-                className="rounded-full bg-white border border-brand-muted/60 text-brand-gray text-xs py-1 px-3 hover:bg-brand-light/40 transition"
-              >
-                Settings
-              </Link>
+            <div className="rounded-xl p-4 bg-white shadow ring-1 ring-brand-muted/30">
+              <h3 className="text-sm font-semibold text-brand-gray">Pending Invites</h3>
+              <p className="text-3xl font-bold mt-1">{pendingInvites}</p>
             </div>
-          </li>
-        ))}
-      </ul>
+            <div className="rounded-xl p-4 bg-white shadow ring-1 ring-brand-muted/30">
+              <h3 className="text-sm font-semibold text-brand-gray">Total Users</h3>
+              <p className="text-3xl font-bold mt-1">{totalUsers}</p>
+            </div>
+          </section>
 
-        )}
-      </section>
+          <section className="bg-white p-4 rounded-xl ring-1 ring-brand-muted/30 shadow">
+            <h3 className="text-lg font-bold mb-2 text-brand-gray">Alerts & Notices</h3>
+            <ul className="list-disc pl-5 text-sm text-brand-gray">
+              <li>All systems operational.</li>
+              <li>No new alerts at this time.</li>
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   )
 }

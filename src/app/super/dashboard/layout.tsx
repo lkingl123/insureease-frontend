@@ -8,11 +8,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const nav: { label: string; href: string; match: 'exact' | 'startsWith' }[] = [
-    { label: 'List All Entities', href: '/super/dashboard',          match: 'exact' },
-    { label: 'Manage Entities',  href: '/super/dashboard/entities',  match: 'startsWith' },
-    { label: 'Manage Invites',   href: '/super/dashboard/invites',   match: 'startsWith' },
-    { label: 'Manage Users',     href: '/super/dashboard/users',     match: 'startsWith' },
+    { label: 'Dashboard',         href: '/super/dashboard',                   match: 'exact' },
+    { label: 'List All Entities', href: '/super/dashboard/list-all-entities', match: 'startsWith' },
+    { label: 'Manage Entities',   href: '/super/dashboard/entities',          match: 'startsWith' },
+    { label: 'Manage Invites',    href: '/super/dashboard/invites',           match: 'startsWith' },
+    { label: 'Manage Users',      href: '/super/dashboard/users',             match: 'startsWith' },
   ]
+
 
   const isActive = (href: string, match: 'exact' | 'startsWith') => {
     if (match === 'exact') return pathname === href
