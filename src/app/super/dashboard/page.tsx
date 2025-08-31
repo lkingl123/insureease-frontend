@@ -11,7 +11,7 @@ export default function SuperDashboardPage() {
   useEffect(() => {
     Promise.all([
       fetch('/api/entities').then(res => res.json()),
-      fetch('/api/invites').then(res => res.json())
+      fetch('/api/invite').then(res => res.json())
     ])
       .then(([entitiesData, invitesData]) => {
         setEntities(Array.isArray(entitiesData) ? entitiesData : [])

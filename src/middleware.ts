@@ -4,6 +4,16 @@ import { jwtVerify } from 'jose'
 const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function middleware(req: NextRequest) {
+   const pathname = req.nextUrl.pathname
+   
+   if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api/login') ||
+    pathname.startsWith('/api/accept-invite') 
+  ) {
+    return NextResponse.next()
+  }
+
   const token = req.cookies.get('token')?.value
 
   if (!token) {

@@ -1,13 +1,20 @@
+// src/app/api/invite/route.ts
 import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 import { authorize } from '@/lib/guards'
 import crypto from 'crypto'
+import type { UserPayload } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
+function isUserPayload(user: any): user is UserPayload {
+  return user && typeof user === 'object' && 'role' in user
+}
+
+// GET /api/invite
 export async function GET(req: Request) {
   const user = await authorize(req)
-  if ('error' in user) return user
+  if (!isUserPayload(user)) return user
 
   const invites = await prisma.inviteToken.findMany({
     include: { entity: true },
@@ -17,9 +24,10 @@ export async function GET(req: Request) {
   return NextResponse.json(invites)
 }
 
+// DELETE /api/invite
 export async function DELETE(req: Request) {
   const user = await authorize(req)
-  if ('error' in user) return user
+  if (!isUserPayload(user)) return user
 
   const { token } = await req.json()
   if (!token) return NextResponse.json({ error: 'Missing token' }, { status: 400 })
@@ -35,16 +43,18 @@ export async function DELETE(req: Request) {
   return NextResponse.json({ message: 'Invite and user deleted' })
 }
 
+// POST /api/invite
 export async function POST(req: Request) {
   const user = await authorize(req)
-  if ('error' in user) return user
+  if (!isUserPayload(user)) return user
 
   const { email, role, entityId } = await req.json()
-  if (!email || !role || !entityId)
+  if (!email || !role || !entityId) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
 
   const token = crypto.randomBytes(32).toString('hex')
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24)
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24 hours
 
   const invite = await prisma.inviteToken.create({
     data: { email, token, role, entityId, expiresAt },

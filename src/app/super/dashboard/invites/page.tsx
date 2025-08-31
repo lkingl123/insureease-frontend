@@ -17,7 +17,7 @@ export default function InviteListPage() {
   useEffect(() => {
     Promise.all([
       fetch('/api/entities').then(res => res.json()).then(setEntities),
-      fetch('/api/invites').then(res => res.json()).then(setInvites),
+      fetch('/api/invite').then(res => res.json()).then(setInvites),
     ]).finally(() => setLoading(false))
   }, [])
 
@@ -25,7 +25,7 @@ export default function InviteListPage() {
     e.preventDefault()
     setSubmitting(true)
 
-    const res = await fetch('/api/invites', {
+    const res = await fetch('/api/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, role, entityId }),
@@ -48,7 +48,7 @@ export default function InviteListPage() {
   const handleDelete = async (token: string) => {
     if (!confirm('Are you sure you want to delete this invite?')) return
 
-    const res = await fetch('/api/invites', {
+    const res = await fetch('/api/invite', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
