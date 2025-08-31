@@ -1,9 +1,14 @@
+// src/app/api/payers/route.ts
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { authorize } from '@/lib/guards'
+import type { UserPayload } from '@/lib/auth'
 
-const prisma = new PrismaClient()
+export async function GET(req: Request) {
+  const user = await authorize(req)
+  if (!(user as UserPayload).role) return user
 
-export async function GET() {
+  // ✅ All roles are allowed to read
   const payers = await prisma.payer.findMany({
     include: { products: true, contacts: true },
     orderBy: { name: 'asc' },
@@ -12,6 +17,14 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const user = await authorize(req)
+  if (!(user as UserPayload).role) return user
+
+  // ✅ Only super_admin or entity_admin can create
+  if (!['super_admin', 'entity_admin'].includes((user as UserPayload).role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const { name } = await req.json()
   if (!name) return NextResponse.json({ error: 'Missing payer name' }, { status: 400 })
 

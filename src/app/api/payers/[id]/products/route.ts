@@ -1,9 +1,17 @@
+// src/app/api/payers/[id]/products/route.ts
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { authorize } from '@/lib/guards'
+import type { UserPayload } from '@/lib/auth'
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const user = await authorize(req)
+  if (!(user as UserPayload).role) return user
+
+  if (!['super_admin', 'entity_admin', 'cred_specialist'].includes((user as UserPayload).role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const { name } = await req.json()
   const payerId = params.id
 
@@ -13,10 +21,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   try {
     const newProduct = await prisma.product.create({
-      data: {
-        name,
-        payerId,
-      },
+      data: { name, payerId },
     })
 
     return NextResponse.json(newProduct)
